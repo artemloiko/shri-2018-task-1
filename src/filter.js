@@ -9,7 +9,6 @@ export function createFilterControl(ymaps) {
         state: { selected: true }
       })
   );
-
   const listBoxControl = new ymaps.control.ListBox({
     data: { content: 'Filter by state', title: 'Filter by state' },
     items: items,

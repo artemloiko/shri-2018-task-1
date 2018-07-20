@@ -12,7 +12,8 @@ function getLabel(el, i, data) {
   x.setMinutes(0);
   x.setSeconds(0);
   x.setMilliseconds(0);
-  return x.toString();
+  // *** более красивый формат вывода даты и времени
+  return x.toLocaleString();
 }
 
 export function createChart(container, data, isActive) {
@@ -29,8 +30,8 @@ export function createChart(container, data, isActive) {
         {
           data: data,
           borderWidth: 1,
-            borderColor: borderColor,
-              backgroundColor: backgroundColor
+          borderColor: borderColor,
+          backgroundColor: backgroundColor,
         }
       ]
     },
@@ -39,8 +40,21 @@ export function createChart(container, data, isActive) {
             display: false
         },
         scales: {
-            xAxes: [{ ticks: { display: false } }],
-            yAxes: [{ ticks: { beginAtZero: true, max: 0 } }]
+            // *** type time автоматически парсит входящую строку времени и  source: 'auto' подбирает формат отображения подписей оси 
+            xAxes: [{ 
+              type: 'time',
+              ticks: {
+                source: 'auto',
+              } 
+            }],
+            // *** график больше нуля убрал max: 0
+            // *** stepsize для лучшей видимости
+            yAxes: [{ 
+              ticks: { 
+                beginAtZero: true, 
+                stepSize: 2 
+              } 
+            }]
         }
     }
   });

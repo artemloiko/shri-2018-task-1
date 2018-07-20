@@ -25,13 +25,13 @@ export function getDetailsContentLayout(ymaps) {
                 Идет загрузка данных...
             </div>
         {% endif %}
-    `,
+      </div>
+     `, // *** в шаблоне не закрыт div
     {
-      build: () => {
+        // *** изменил стрелочную на обычную функцию, т.к. у стрелочной this не свой
+      build: function() {
         BalloonContentLayout.superclass.build.call(this);
-
         const { details } = this.getData().object.properties;
-
         if (details) {
           const container = this.getElement().querySelector('.details-chart');
 
@@ -43,7 +43,7 @@ export function getDetailsContentLayout(ymaps) {
         }
       },
 
-      clear: () => {
+      clear: function() {
         if (this.connectionChart) {
           this.connectionChart.destroy();
         }

@@ -2,24 +2,24 @@ import { loadList, loadDetails } from './api';
 import { getDetailsContentLayout } from './details';
 import { createFilterControl } from './filter';
 
-export function initMap(ymaps, containerId) {
+// *** Добавил export default потому что экспорт только одной функции 
+export default function initMap(ymaps, containerId) {
   const myMap = new ymaps.Map(containerId, {
     center: [55.76, 37.64],
     controls: [],
-    zoom: 10
+    zoom: 11
   });
-
   const objectManager = new ymaps.ObjectManager({
     clusterize: true,
     gridSize: 64,
     clusterIconLayout: 'default#pieChart',
-    clusterDisableClickZoom: false,
+    // *** лишнее св-во которое false по умолчанию clusterDisableClickZoom: false,
     geoObjectOpenBalloonOnClick: false,
     geoObjectHideIconOnBalloonOpen: false,
-    geoObjectBalloonContentLayout: getDetailsContentLayout(ymaps)
+    geoObjectBalloonContentLayout: getDetailsContentLayout(ymaps),
   });
-
-  objectManager.clusters.options.set('preset', 'islands#greenClusterIcons');
+  // *** лишняя команда, мешает отображению кластеров в виде диаграмм
+  // objectManager.clusters.options.set('preset', 'islands#greenClusterIcons');
 
   loadList().then(data => {
     objectManager.add(data);
@@ -29,17 +29,20 @@ export function initMap(ymaps, containerId) {
   objectManager.objects.events.add('click', event => {
     const objectId = event.get('objectId');
     const obj = objectManager.objects.getById(objectId);
+    // *** построил условие динамической подргузки балуна по примеру в документации 
+    if (obj.properties.details) {
+      objectManager.objects.balloon.open(objectId);
+    } else {
+      obj.properties.balloonContent = "Идет загрузка данных...";
+      objectManager.objects.balloon.open(objectId);
 
-    objectManager.objects.balloon.open(objectId);
-
-    if (!obj.properties.details) {
       loadDetails(objectId).then(data => {
         obj.properties.details = data;
         objectManager.objects.balloon.setData(obj);
       });
     }
   });
-
+  
   // filters
   const listBoxControl = createFilterControl(ymaps);
   myMap.controls.add(listBoxControl);
@@ -47,7 +50,11 @@ export function initMap(ymaps, containerId) {
   var filterMonitor = new ymaps.Monitor(listBoxControl.state);
   filterMonitor.add('filters', filters => {
     objectManager.setFilter(
-      obj => filters[obj.isActive ? 'active' : 'defective']
+      // *** добавил obj.properties.isActive, т.к. этот флаг передаю в properties
+      obj => filters[obj.properties.isActive ? 'active' : 'defective']
     );
   });
+  // *** добавил objectManager on map
+  myMap.geoObjects.add(objectManager);
+
 }
